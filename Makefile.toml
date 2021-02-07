@@ -1,0 +1,15 @@
+[env]
+LINKER_FILE = "src/bsp/raspberrypi/link.ld"
+
+[tasks.build]
+command = "cargo"
+args = ["build", "--features", "bsp_rpi3", "--release"]
+
+[tasks.objcopy]
+command = "rust-objcopy"
+args = ["--strip-all", "-O", "binary", "target/aarch64-unknown-none-softfloat/release/pix", "kernel8.img"]
+
+[tasks.qemu]
+command = "docker"
+args = ["run", "--rm", "-v", "${CARGO_MAKE_WORKING_DIRECTORY}:/work/tutorial", "-w", "/work/tutorial", "-i", "-t", "rustembedded/osdev-utils", "qemu-system-aarch64", "-M", "raspi3", "-d", "in_asm", "-display", "none", "-kernel", "kernel8.img"]
+dependencies = ["build", "objcopy"]
